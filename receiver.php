@@ -2,6 +2,20 @@
 @header("content-Type: text/html; charset=utf-8");
 session_start();
 
+require "config.php";
+
+if (($maximum_messages_every_5minutes < 25) or ($maximum_messages_every_5minutes > 200)) {
+	die("Inappropriate 5-minute-limit.");
+}
+if (($lock_out_minutes < 0) or ($lock_out_minutes > 720)) {
+	die("Incorrect locked out minutes.");
+}
+if ($server_password != ""){
+	if ((!ctype_alnum($server_password)) or (strlen($server_password) > 32)) {
+		die("Inappropriate server password, number and letters only, maximum 32.");
+	}
+}
+
 function check_user_hash($userhash) {
 
 	$clienthash_length = 40;
@@ -129,7 +143,7 @@ else { #all the lockout checks
 		}
 	}
 	if ($client_numrows == 0) {
-		$client_verification_first50_statement = $client_verification->prepare('SELECT messagetime FROM messages WHERE senderip = :ip ORDER BY messagetime DESC LIMIT 0,51');
+		$client_verification_first50_statement = $client_verification->prepare("SELECT messagetime FROM messages WHERE senderip = :ip AND messagetime > date('now', '-5 minutes');");
 		$client_verification_first50_statement->bindvalue(':ip',$client_IP);
 		$client_verification_first50_result = $client_verification_first50_statement->execute();
 		$client_numrows2 = 0;
@@ -143,15 +157,14 @@ else { #all the lockout checks
 		}
 		$client_verification_first50_statement->close();
 
-		$five_minutes_earlier = date('Y-m-d H:i:s', time() - 5 * 60);
-		if (($client_numrows2 == 51) and ($last_message_time < $five_minutes_earlier)) {
+		if ($client_numrows2 > $maximum_messages_every_5minutes){
 			$client_verification_lockout_statement = $client_verification->prepare('INSERT INTO lockouts(releasetime, userip) VALUES (:time , :ip);');
-			$client_verification_lockout_statement->bindvalue(':time',date('Y-m-d H:i:s', time() + 5 * 60));
+			$client_verification_lockout_statement->bindvalue(':time',date('Y-m-d H:i:s', time() + $lock_out_minutes));
 			$client_verification_lockout_statement->bindvalue(':ip',$client_IP);
 			$client_verification_lockout_statement->execute();
 			$client_verification_lockout_statement->close();
 			echo "403: Too Many Requests.";
-			header('HTTP/1.0 403 Forbidden'); #Sent 51 messages with the oldest one less than 5 minutes ago, 5-minute lockout granted.
+			header('HTTP/1.0 403 Forbidden'); #Sent more than $maximum_messages_every_5minutes in 5 minutes, $lock_out_minutes lockout granted.
 			session_destroy();
 			die();
 		}
@@ -161,6 +174,12 @@ else { #all the lockout checks
 unset($client_verification);
 #all cleared, let's actually accept user's json
 $request_json = json_decode(file_get_contents("php://input"), true);
+if ($server_password != $request_json['serverpass']) {
+	echo "403: Bad Password.";
+	header('HTTP/1.0 403 Forbidden');
+	session_destroy();
+	die();
+}
 
 #original json: {'recipient':recipienthash, 'sender':clienthash, 'messagebody': clientmessage, 'messageiv': clientiv, 'messagelength': clientmessageOL}
 
