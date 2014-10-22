@@ -66,8 +66,8 @@ $client_messages = new SQLite3('earcis-server.sqlite');
 $client_messages_statement = $client_messages->prepare("SELECT messagetime,sender,messagebody,messageIV,messageOL FROM messages WHERE receiver = :rc LIMIT $start_position,$end_position;");
 $client_messages_statement->bindvalue(':rc',$receiver);
 $client_messages_statement_result = $client_messages_statement->execute();
-$client_numrows = 0;
 $client_messages_statement_result->reset();
+$client_numrows = 0;
 $messages = array();
 while ($client_res = $client_messages_statement_result->fetchArray(SQLITE3_ASSOC)) {
 	if (!isset($client_res)) {
@@ -83,13 +83,11 @@ while ($client_res = $client_messages_statement_result->fetchArray(SQLITE3_ASSOC
 	$client_res_array += array("messageiv"=>$client_res['messageIV']);
 	$client_res_array += array("messageol"=>$client_res['messageOL']);
 	$messages[] = $client_res_array;
-	unset($client_res_array); 
+	$client_numrows++;
+	unset($client_res_array);
 }
 $client_messages_statement->close();
-$client_return = array();
-$end_position_array = array("messagequantity"=>$end_position); 
-#$client_return += $end_position_array;
-#$client_return += $message;
-#unset($messages);
-#Todo: find a way to push arrays together without losing depth.
+$client_return = json_encode(array("messagequantity"=>$client_numrows,"messages"=>$messages));
+header('Content-type: application/json');
+exit($client_return);
 ?>
