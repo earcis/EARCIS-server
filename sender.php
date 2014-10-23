@@ -45,7 +45,7 @@ if ($server_password != $request_json['serverpass']) {
 	session_destroy();
 	die();
 }
-if (($request_json['lastRequestPosition'] % 50 != 0) or (!is_numeric($request_json['lastRequestPosition'])) or ($request_json['lastRequestPosition'] < 0))  {
+if ((!is_numeric($request_json['lastRequestPosition'])) or ($request_json['lastRequestPosition'] < 0))  {
 	echo "400: Bad Request.";
 	header('HTTP/1.0 400 Bad Request');
 	session_destroy();
