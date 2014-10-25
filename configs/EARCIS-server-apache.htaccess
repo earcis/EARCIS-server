@@ -1,0 +1,9 @@
+Options +FollowSymLinks
+RewriteEngine On
+RewriteBase /
+RewriteRule ^sender sender.php [L]
+RewriteRule ^receiver receiver.php [L]
+<Files ~ "\.(sqlite|sql|db)$">
+   order deny,allow
+   deny from all
+</Files>

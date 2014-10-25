@@ -159,7 +159,7 @@ else { #all the lockout checks
 
 		if ($client_numrows2 > $maximum_messages_every_5minutes){
 			$client_verification_lockout_statement = $client_verification->prepare('INSERT INTO lockouts(releasetime, userip) VALUES (:time , :ip);');
-			$client_verification_lockout_statement->bindvalue(':time',date('Y-m-d H:i:s', time() + $lock_out_minutes));
+			$client_verification_lockout_statement->bindvalue(':time',date('Y-m-d H:i:s', time() + 60 * $lock_out_minutes));
 			$client_verification_lockout_statement->bindvalue(':ip',$client_IP);
 			$client_verification_lockout_statement->execute();
 			$client_verification_lockout_statement->close();

@@ -1,0 +1,1 @@
+5 * * * * /usr/bin/php /usr/share/nginx/html/earcis/cron.php
