@@ -6,6 +6,7 @@ if (php_sapi_name() != 'cli') {
 
 require "config.php";
 
+chdir(dirname(__FILE__));
 $cron_sql = new SQLite3('earcis-server.sqlite');
 
 $cron_sql_delmessage_statement = $cron_sql->prepare("DELETE FROM messages WHERE messagetime < date('now', '-1 hour');");
