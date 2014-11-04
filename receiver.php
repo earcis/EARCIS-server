@@ -181,7 +181,7 @@ if ($server_password != $request_json['serverpass']) {
 	die();
 }
 
-#original json: {'recipient':recipienthash, 'sender':clienthash, 'messagebody': clientmessage, 'messageiv': clientiv, 'messagelength': clientmessageOL}
+#original json: {'recipient':recipienthash, 'sender':clienthash, 'messagebody': clientmessage, 'messageiv': clientiv, 'messageheader': clientmessageheader, 'messagetag': clientmessagetag, 'serverpass': serverpass}
 
 
 if (check_user_hash($request_json['recipient']) == True) {
@@ -212,21 +212,21 @@ else {
 	bad_request();
 }
 
-if (($request_json['messagelength'] < 1001) and ($request_json['messagelength'] > 0)) {
-	$message_length = $request_json['messagelength'];
+if (check_message_base64(($request_json['messagetag'])) == True) {
+	$message_tag = $request_json['messagetag'];
 }
 else {
 	bad_request();
 }
 
 $client_submission = new SQLite3('earcis-server.sqlite');
-$client_submission_statement = $client_submission->prepare('INSERT INTO messages (senderip, sender, receiver, messagebody, messageIV, messageOL) VALUES (:ip , :sender , :receiver , :body , :iv , :ol);');
+$client_submission_statement = $client_submission->prepare('INSERT INTO messages (senderip, sender, receiver, messagebody, messageIV, messagetag) VALUES (:ip , :sender , :receiver , :body , :iv , :tag);');
 $client_submission_statement->bindvalue(':ip',$client_IP);
 $client_submission_statement->bindvalue(':sender',$message_sender);
 $client_submission_statement->bindvalue(':receiver',$message_recipient);
 $client_submission_statement->bindvalue(':body',$message_body);
 $client_submission_statement->bindvalue(':iv',$message_iv);
-$client_submission_statement->bindvalue(':ol',$message_length);
+$client_submission_statement->bindvalue(':tag',$message_tag);
 if ($client_submission_statement->execute()) {
 }
 else {

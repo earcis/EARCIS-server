@@ -63,7 +63,7 @@ $start_position = $request_json['lastRequestPosition'];
 $end_position = $start_position + 50;
 
 $client_messages = new SQLite3('earcis-server.sqlite');
-$client_messages_statement = $client_messages->prepare("SELECT messagetime,sender,messagebody,messageIV,messageOL FROM messages WHERE receiver = :rc LIMIT $start_position,$end_position;");
+$client_messages_statement = $client_messages->prepare("SELECT messagetime,sender,messagebody,messageIV,messagetag FROM messages WHERE receiver = :rc LIMIT $start_position,$end_position;");
 $client_messages_statement->bindvalue(':rc',$receiver);
 $client_messages_statement_result = $client_messages_statement->execute();
 $client_messages_statement_result->reset();
@@ -81,7 +81,7 @@ while ($client_res = $client_messages_statement_result->fetchArray(SQLITE3_ASSOC
 	$client_res_array += array("sender"=>$client_res['sender']);
 	$client_res_array += array("messagebody"=>$client_res['messagebody']);
 	$client_res_array += array("messageiv"=>$client_res['messageIV']);
-	$client_res_array += array("messageol"=>$client_res['messageOL']);
+	$client_res_array += array("messagetag"=>$client_res['messagetag']);
 	$messages[] = $client_res_array;
 	$client_numrows++;
 	unset($client_res_array);
