@@ -5,6 +5,12 @@ Server for Encryption and Relational Communications in Space
 
 EARCIS is an instant messaging tool for secured end-to-end communications through insecure connections.
 
+Version 0.2
+--------------
+Version 0.2 is released on Nov 4, 2014.
+This patch includes security updates and system integrity updates, and is NOT compatible with previous versions of servers and clients.
+Please update servers and clients to Version 0.2.
+
 Installation and Running
 --------------
 
